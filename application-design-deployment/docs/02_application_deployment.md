@@ -6,10 +6,67 @@ lang:   en
 
 
 # Planning a resource application
+<div class=column>
+
+- Your code is
+    - Written/ported &checkmark;
+    - Parallelised &checkmark;
+    - Optimised &checkmark;
+    - Using efficient I/O &checkmark;
+    - Using robust version control and software engineering practices &checkmark;
+    - Tested, verified, and validated &checkmark;
+</div>
+
+<div class=column>
+- Now let's do some science with it! 
+- How do we run the code on large machines?
+</div>
+
+
+# Accessing top-tier computing resources
+- Typically access for even Tier-0 supercomputers is free for academic users
+- No free lunch though – it is a competitive process!
+- Various national and international organisations
+
+<div class=column style=width:35%>
+![](images/CSC_2012_LOGO.png)
+</div>
+
+<div class=column style=width:55%>
+![](images/EuroHPC_JU_logo.png)
+</div>
+
+
+# Application contents
+- Be ready to explain and defend your solid science (or business) case
+- Have a clear picture of data amounts and flow – Data Management Plan
+- Demonstrate technical expertise with and good performance of the code
+
+
+# Application types
+- CSC academic projects
+- EuroHPC
+   - Development
+   - Benchmark
+   - Regular
+   - Extreme
+- Pilot
+
+
+# Procedure
+- Application and review
+   - Technical evaluation
+   - Scientific review
+   - Ranking, decision (sometimes rebuttal)
+- Project setup
+- Project operations
+- Reporting
+
 
 
 # Performance properties
 
+- How do you ensure your code is performing well and not wasting these precious resources?
 
 # General workflows
 
@@ -18,22 +75,6 @@ lang:   en
 
 # Code deployment and production
 
-<div class=column>
-
-- Your code is
-    - Written/ported &checkmark;
-    - Modular &checkmark;
-    - Using robust version control and software engineering practices &checkmark;
-    - Parallelised &checkmark;
-    - Optimised &checkmark;
-    - Using efficient I/O &checkmark;
-    - Tested, verified, and validated &checkmark;
-</div>
-
-<div class=column>
-- You were granted computational resources for benchmarking and/or production! 🎉
-- How do you ensure your code is performing well and not wasting these precious resources?
-</div>
 
 
 # Performance and optimisation
