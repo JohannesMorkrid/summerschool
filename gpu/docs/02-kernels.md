@@ -261,17 +261,17 @@ hipMalloc(&dx, num_bytes);
 \ 
 \ 
 ```cpp
-// Explicit copy direction with the 'kind' parameter
-hipMemcpy(dx, x, num_bytes, hipMemcpyHostToDevice);
-hipMemcpy(x, dx, num_bytes, hipMemcpyDeviceToHost);
-
+// Recommended
 // Implicit copy direction, runtime figures it out
 // from the virtual address of the pointer.
-// Not Recommended: if mistakes are done it may result
-// in undefined behavior and it's easy to "lose track"
-// of what is host and what is device
 hipMemcpy(dx, x, num_bytes, hipMemcpyDefault);
 hipMemcpy(x, dx, num_bytes, hipMemcpyDefault);
+
+// Explicit copy direction with the 'kind' parameter
+// Not recommended: giving the wrong direction
+// is just silently ignored
+hipMemcpy(dx, x, num_bytes, hipMemcpyHostToDevice);
+hipMemcpy(x, dx, num_bytes, hipMemcpyDeviceToHost);
 ```
 
 # Error checking
