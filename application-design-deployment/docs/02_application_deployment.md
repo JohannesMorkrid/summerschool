@@ -125,10 +125,11 @@ Step 0: study the computing centre's recommendations
 - **Record your findings** for future reference
 - Investigate if something feels off
 
--  *So, covering ideas like measure first where the bottleneck is before doing any optimization (could be I/O too).*
 
-
-# Example: task – thread balance on one node
+# Example: task – thread balance on 10 nodes
+<div class=column style=width:100%>
+![](images/vlasiator_roihucpu_task_balance.png){.center width=50%}
+</div>
 
 
 # Perfomance properties – scaling
@@ -145,9 +146,22 @@ How efficiently is your code running in parallel?
 
 
 # Example – weak scaling
+<div class=column>
+![](images/vlasiator_lumic_weak_scaling.png){.center width=100%}
+</div>
 
+<div class=column>
+![](images/vlasiator_lumic_weak_scaling_efficiency.png){.center width=100%}
+</div>
 
 # Example – strong scaling
+<div class=column>
+![](images/vlasiator_lumic_strong_scaling_light.png){.center width=100%}
+</div>
+
+<div class=column>
+![](images/vlasiator_lumic_strong_scaling_efficiency_light.png){.center width=100%}
+</div>
 
 
 # General workflows
@@ -265,97 +279,5 @@ How efficiently is your code running in parallel?
 <div class=column style=width:43%>
 ![Generated with Copilot.](images/copilot_running.jpeg)
 </div>
-
-
-
-# Case Vlasiator: Weak scaling on Mahti
-
-<div class=column>
-![](images/vlasiator_mahti_weak_scaling.png){.center width=100%}
-</div>
-
-<div class=column>
-![](images/vlasiator_mahti_weak_scaling_efficiency.png){.center width=100%}
-</div>
-
-
-# Case Vlasiator: Weak scaling on LUMI-C
-
-<div class=column>
-![](images/vlasiator_lumic_weak_scaling.png){.center width=100%}
-</div>
-
-<div class=column>
-![](images/vlasiator_lumic_weak_scaling_efficiency.png){.center width=100%}
-</div>
-
-
-# Case Vlasiator: Strong scaling (light) on Mahti
-
-<div class=column>
-![](images/vlasiator_mahti_strong_scaling_light.png){.center width=100%}
-</div>
-
-<div class=column>
-![](images/vlasiator_mahti_strong_scaling_efficiency_light.png){.center width=100%}
-</div>
-
-
-# Case Vlasiator: Strong scaling (light) on LUMI-C
-
-<div class=column>
-![](images/vlasiator_lumic_strong_scaling_light.png){.center width=100%}
-</div>
-
-<div class=column>
-![](images/vlasiator_lumic_strong_scaling_efficiency_light.png){.center width=100%}
-</div>
-
-
-# Case Vlasiator: Strong scaling (medium) on Mahti
-
-<div class=column>
-![](images/vlasiator_mahti_strong_scaling_medium.png){.center width=100%}
-</div>
-
-<div class=column>
-![](images/vlasiator_mahti_strong_scaling_efficiency_medium.png){.center width=100%}
-</div>
-
-
-# Case Vlasiator: Strong scaling (medium) on LUMI-C
-
-<div class=column>
-![](images/vlasiator_lumic_strong_scaling_medium.png){.center width=100%}
-</div>
-
-<div class=column>
-![](images/vlasiator_lumic_strong_scaling_efficiency_medium.png){.center width=100%}
-</div>
-
-
-# Case Vlasiator: Strong scaling (heavy) on Mahti
-
-<div class=column>
-![](images/vlasiator_mahti_strong_scaling_heavy.png){.center width=100%}
-</div>
-
-<div class=column>
-![](images/vlasiator_mahti_strong_scaling_efficiency_heavy.png){.center width=100%}
-</div>
-
-
-# Case Vlasiator: Strong scaling (heavy) on LUMI-C
-
-<div class=column>
-![](images/vlasiator_lumic_strong_scaling_heavy.png){.center width=100%}
-</div>
-
-<div class=column>
-![](images/vlasiator_lumic_strong_scaling_efficiency_heavy.png){.center width=100%}
-</div>
-
-
-
 
 
