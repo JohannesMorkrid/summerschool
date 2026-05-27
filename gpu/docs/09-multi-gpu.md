@@ -167,50 +167,54 @@ for(int n = 0; n < num_devices; n++) {
 
 # Device management: HIP
 
-| Api call | Description
-|-:|:-|
-| `hipErrot_t hipGetDeviceCount(&count)` | Query the number of available GPUS within a node |
-| `hipErrot_t hipSetDevice(device)` | Set `device` as the current device for the calling host thread (device numbering starts from 0) |
-| `hipErrot_t hipGetDevice(&device)` | Query the current device for the calling host thread |
-| `hipErrot_t hipDeviceReset(void)` |Reset and destroy all current device resources|
+<small>
+
+| Description | API Call |
+|-|-|
+| Query the number of available GPUS within a node | `hipGetDeviceCount(&count)` |
+| Set `device` as the current device in the calling host thread | `hipSetDevice(device)`  |
+| Query the current device for the calling host thread | `hipGetDevice(&device)` |
+| Reset and destroy all current device resources| `hipDeviceReset(void)` |
+
+*Notes*
+
+- All of the above return `hipError_t`
+- `device` numbers start from 0.
+
+</small>
+
 
 # Device management: OpenMP
 
-| Api call | Description
-|-:|:-|
-| `int omp_get_num_devices()` | Query the number of devices within a node |
-| `void omp_set_default_device(device)` | Set `device` as the current device for the calling host thread
-| `int omp_get_default_device()` | Query the current device for the calling host thread |
+<small>
 
-# Selecting the Correct GPU
+| Description | API Call |
+|-|-|
+| Query the number of devices within a node | `int omp_get_num_devices()` |
+| Set `device` as the current device for the calling host thread | `void omp_set_default_device(device)` |
+| Query the current device for the calling host thread| `int omp_get_default_device()`  |
 
-* typically all processes on the node can access all GPUs of that node
-* implementation for using 1 GPU per 1 MPI process
+</small>
 
-```cpp
-int deviceCount, nodeRank;
-MPI_Comm commNode;
-MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &commNode);
-MPI_Comm_rank(commNode, &nodeRank);
-hipGetDeviceCount(&deviceCount);
-hipSetDevice(nodeRank % deviceCount);
+# Compiling HIP+MPI Code
+
+- HIP code requires HIP compiler, **but**
+- MPI code is compiled with wrappers `mpicxx` or `mpic++`
+
+  1. Either instruct MPI compiler to use `hipcc`, e.g., for OpenMPI:
+  ```bash
+  OMPI_CXXFLAGS='' OMPI_CXX='hipcc'
+  ```
+  2. or separate MPI and HIP code in different compilation units, compile with
+    `mpicxx`/`hipcc`, respectively, and link the objects with `mpicxx`/`hipcc`.
+      - Linker flags must be collected for `hipcc`/`mpicxx`!
+
+  ---
+
+- **On LUMI, `cc` and `CC` wrappers know about both MPI and HIP**:
+```shell
+$ CC -xhip <code.cpp> -o <binary>
 ```
-::: notes
-* Can be done from slurm using `ROCR_VISIBLE_DEVICES` or `CUDA_VISIBLE_DEVICES`
-:::
-
-# Compiling MPI+GPU Code
-
-- Trying to compile code with HIP calls with other than the `hipcc`
-  compiler can result in errors
-- Either set MPI compiler to use `hipcc`, eg for OpenMPI:
-```bash
-OMPI_CXXFLAGS='' OMPI_CXX='hipcc'
-```
-- or separate HIP and MPI code in different compilation units compiled with
-  `mpicxx` and `hipcc`
-    * Link object files in a separate step using `mpicxx` or `hipcc`
-- **on LUMI, `cc` and `CC` wrappers know about both MPI and HIP**
 
 
 # Example: HIP + MPI program
@@ -226,11 +230,11 @@ MPI_Recv(dB, ...)
 gpu_kernel<<<gridsize, blocksize>>> (dB, N);
 ```
 
+- Multiple devices per rank
+
 # Overlapping communication and computation
 
-- Non-blocking MPI operations make it possible to start and complete communication in separate steps
-    - A CPU may still be needed for the message progress $\Rightarrow$ overlapping
-      CPU computation with communication not necessarily possible
+- Non-blocking MPI operations enable starting and completing communication in separate calls
 - GPU is capable of concurrent computation and memory copies
 - Host CPU is available for message progress $\Rightarrow$ more potential for 
   overlapping
@@ -257,14 +261,12 @@ compute_boundaries<<<gridsize, blocksize>>> (boundary_data, ...);
 
 # Summary
 
-- there are various options to write a multi-GPU program
-- in HIP/OpenMP a device is set, and the subsequent calls operate on that device
-- in SYCL each device has a separate queue
-- often best to use one GPU per process + MPI for communications
-- use direct peer to peer transfers when available in multithreaded cases
+- Multiple options to write multi-GPU programs
+- One GPU per process is simple (`ROCR_VISIBLE_DEVICES` or split communicator)
+- Multiple GPUs per process: 
+  - Select gpu with OpenMP directive/API call or `hipSetDevice()`
+  - `hipMemcpy` with `hipMemcpyDefault` uses unified virtual addressing for
+    device-to-device memory copies
 - GPU-aware MPI is required when passing device pointers to MPI
-
-     * Using host pointers does not require any GPU awareness
-
-- on LUMI GPU binding is important
-  
+  - Using host pointers does not require any GPU awareness
+- GPU-aware MPI enable overlapping computation and communication 
