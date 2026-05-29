@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2025 CSC - IT Center for Science Ltd. <www.csc.fi>
+
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # HDF5 exercise instructions
 
 In order to compile and run the HDF5 code examples and exercises you must have an MPI-aware HDF5 library available on your system, and instruct the compiler to link to `libhdf5`.
