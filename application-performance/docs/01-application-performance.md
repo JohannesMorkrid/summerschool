@@ -21,16 +21,19 @@ My code is too slow! What do I do?
 
 Let's look at common **profiling methods** and **tools** for systematically answering these questions.
 
-# Profiling methods
+<!-- # Tracing
 
-**Tracing:**
-
-- Place markers or timestamps in code
+- Place markers or timestamps in code, either manually or automatically with tracing tools
 - Measure the wall-clock difference between two markers
 
-**Sampling:**
+# Sampling
 
--
+- -->
+
+# TODO: slides about tracing vs sampling
+
+- Tracing vs sampling
+- instrumentation
 
 # Overview
 
