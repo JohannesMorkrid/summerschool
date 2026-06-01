@@ -1,4 +1,8 @@
 ---
+# SPDX-FileCopyrightText: 2019 CSC - IT Center for Science Ltd. <www.csc.fi>
+#
+# SPDX-License-Identifier: CC-BY-4.0
+
 title: Application performance
 event: CSC Summer School in High-Performance Computing 2025
 lang:  en
