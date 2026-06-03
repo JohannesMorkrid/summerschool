@@ -25,7 +25,7 @@ We will cover the following:
 You can find the official HDF5 documentation [here](https://support.hdfgroup.org/documentation/hdf5/latest/index.html).
 Especially useful are the User Guide and Reference Manual tabs.
 
-There are a few coding exercises associates with these notes. They will be pointed out as you progress through the notes.
+There are a few coding exercises associated with these notes. They will be pointed out as you progress through the notes.
 
 ## The HDF5 programming interface (= API)
 
