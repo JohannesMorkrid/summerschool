@@ -1,70 +1,25 @@
-<<<<<<< HEAD
-=======
 // SPDX-FileCopyrightText: 2026 CSC - IT Center for Science Ltd. <www.csc.fi>
 //
 // SPDX-License-Identifier: MIT
 
->>>>>>> origin/main
 /*
- * This solution executes three kernels concurrently
- * using separate HIP streams.
- * - Validate that kernels are executing concurrently with `run_tue ... rocprof --hip-trace ./<your->
- *   - Open chrome://tracing in Chromium or https://ui.perfetto.dev, open the generated "results.jso>
+ * This code is built on upon solution of 02-asynchkernel.cpp
+ * Task is 
+ * - to perform memory copies asynchronously
+ * - validate that memory copies are non-blocking `srun ... rocprof --hip-trace ./03-asyncmemcopy`
+ *   - look for file "results.json"
+ * - remember to synchronize streams manually now!
  */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <cstring>
-#include "error_checking.hpp"
+#include "../error_checking.hpp"
+
+#include "../04-streams-helperfuns.h"
 
 // GPU kernel definition
-__global__ void kernel_a(float *a, int n)
-{
-  int tid = threadIdx.x + blockIdx.x * blockDim.x;
-
-  if (tid < n) {
-    float x = tid;
-
-    for (int i = 0; i < 30; ++i) {
-      x = sinf(x) + cosf(x);
-    }
-
-    a[tid] = x;
-  }
-}
-
-__global__ void kernel_b(float *a, int n)
-{
-  int tid = threadIdx.x + blockIdx.x * blockDim.x;
-
-  if (tid < n) {
-    float x = tid;
-
-    for (int i = 0; i < 30; ++i) {
-      x = sqrtf(x + 1.0f);
-    }
-
-    a[tid] = x;
-  }
-}
-
-__global__ void kernel_c(float *a, int n)
-{
-  int tid = threadIdx.x + blockIdx.x * blockDim.x;
-
-  if (tid < n) {
-    float x = tid;
-
-    for (int i = 0; i < 30; ++i) {
-      x = logf(x + 1.0f);
-    }
-
-    a[tid] = x;
-  }
-}
-
 int main() {
-  constexpr size_t N = 1<<26; // ~68 million items
+  constexpr size_t N = 1<<10; // 4096 items
 
   constexpr int blocksize = 256;
   constexpr int gridsize =(N-1+blocksize)/blocksize;
@@ -80,26 +35,25 @@ int main() {
   b = (float*) malloc(N_bytes);
   c = (float*) malloc(N_bytes);
 
-  hipStream_t stream_a;
-  hipStream_t stream_b;
-  hipStream_t stream_c;
+  hipStream_t stream_a; 
+  hipStream_t stream_b; 
+  hipStream_t stream_c; 
 
-  HIP_ERRCHK(hipStreamCreate(&stream_a));
-  HIP_ERRCHK(hipStreamCreate(&stream_b));
-  HIP_ERRCHK(hipStreamCreate(&stream_c));
+  hipStreamCreate(&stream_a);
+  hipStreamCreate(&stream_b);
+  hipStreamCreate(&stream_c);
 
   // Device allocations
   HIP_ERRCHK(hipMalloc((void**)&d_a, N_bytes));
   HIP_ERRCHK(hipMalloc((void**)&d_b, N_bytes));
   HIP_ERRCHK(hipMalloc((void**)&d_c, N_bytes));
-
+  
   // warmup
   kernel_c<<<gridsize, blocksize>>>(d_a, N);
   HIP_ERRCHK(hipMemcpy(a, d_a, N_bytes/100, hipMemcpyDefault));
   HIP_ERRCHK(hipDeviceSynchronize());
-  // warmup ends
 
-  // Launch each kernel in a different stream
+  // Execute kernels in sequence
   kernel_a<<<gridsize, blocksize,0,stream_a>>>(d_a, N);
   HIP_ERRCHK(hipGetLastError());
 
@@ -109,14 +63,9 @@ int main() {
   kernel_c<<<gridsize, blocksize,0,stream_c>>>(d_c, N);
   HIP_ERRCHK(hipGetLastError());
 
-  // Synchronize streams and copy results back in the default stream
-  HIP_ERRCHK(hipStreamSynchronize(stream_a));
+  // Copy results back
   HIP_ERRCHK(hipMemcpy(a, d_a, N_bytes, hipMemcpyDefault));
-
-  HIP_ERRCHK(hipStreamSynchronize(stream_b));
   HIP_ERRCHK(hipMemcpy(b, d_b, N_bytes, hipMemcpyDefault));
-
-  HIP_ERRCHK(hipStreamSynchronize(stream_c));
   HIP_ERRCHK(hipMemcpy(c, d_c, N_bytes, hipMemcpyDefault));
 
   for (int i = 0; i < 20; ++i) printf("%f ", a[i]);
@@ -141,4 +90,5 @@ int main() {
   free(a);
   free(b);
   free(c);
+
 }

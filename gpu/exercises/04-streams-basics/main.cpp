@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 CSC - IT Center for Science Ltd. <www.csc.fi>
+//
+// SPDX-License-Identifier: MIT
+
 /*
  * This code in its current form uses the default stream
  * Task is to:
