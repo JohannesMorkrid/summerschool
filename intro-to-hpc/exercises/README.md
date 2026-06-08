@@ -17,7 +17,7 @@ directly to your summershool clone:
 
     cd /scratch/project_462001452/$USER/summerschool
 
-See the exercise instructions for [LUMI](../README_LUMI.md) or [Mahti](../README_Mahti.md) for general instructions.
+See the general instructions for [LUMI](../README_LUMI.md) or [Mahti](../README_Mahti.md) for more complete instructions.
 
 ## Exercises
 
