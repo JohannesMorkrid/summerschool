@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2010 CSC - IT Center for Science Ltd. <www.csc.fi>
+
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # Makefiles, modules, and batch job system
 
 In this exercise we get practice on editing files, loading modules, compiling code, and submitting jobs.
