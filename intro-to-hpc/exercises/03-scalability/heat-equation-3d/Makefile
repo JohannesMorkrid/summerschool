@@ -1,75 +1,77 @@
-ifeq ($(COMP),)
-COMP=gnu
+# SPDX-FileCopyrightText: 2026 CSC - IT Center for Science Ltd. <www.csc.fi>
+#
+# SPDX-License-Identifier: MIT
+
+.DEFAULT_GOAL := all
+
+# default to LUMI configuration
+ifeq ($(PLATFORM),)
+PLATFORM=lumi
 endif
 
-COMMONDIR=../../common
+$(info PLATFORM: $(PLATFORM))
 
-ifeq ($(COMP),pgi)
+DFLAGS=-DMPI_NEIGHBORHOOD
+
+# PLATFORM=generic is intended for laptops and local workstations. Should work on any Unix-like system provided that MPI is available
+ifeq ($(PLATFORM),generic)
 CXX=mpicxx
-CC=pgcc
-CCFLAGS=-g -O3 -I$(COMMONDIR)
-LDFLAGS=
+CC=mpicc
+CCFLAGS=-fopenmp -g -O3 -march=native -Wall -DNDEBUG $(DFLAGS)
+LDFLAGS=-fopenmp
 LIBS=
 endif
 
-ifeq ($(COMP),gnu)
+ifeq ($(PLATFORM),mahti)
 CXX=mpicxx
-CC=gcc
-# CCFLAGS=-g -O3 -ffast-math -mfma -march=native -Wall -I$(COMMONDIR) -DNDEBUG -funsafe-math-optimizations -fopenmp 
-#CCFLAGS=-g -O3 -march=native -Wall -I$(COMMONDIR) -DNDEBUG -fopenmp 
-CCFLAGS=-g -O3 -march=native -I$(COMMONDIR) -DNDEBUG -fopenmp -DMPI_DATATYPES -DMPI_NEIGHBORHOOD
-# CCFLAGS=-g -O3 -Wall -I$(COMMONDIR) -DNDEBUG -fno-tree-vectorize
-LDFLAGS=
+CC=mpicc
+CCFLAGS=-fopenmp -O3 -march=native -Wall -DNDEBUG $(DFLAGS)
+LDFLAGS=-fopenmp
 LIBS=
 endif
 
-ifeq ($(COMP),cray)
+ifeq ($(PLATFORM),lumi)
 CXX=CC
 CC=cc
-# CCFLAGS=-g -O3 -ffast-math -mfma -march=native -Wall -I$(COMMONDIR) -DNDEBUG -funsafe-math-optimizations -fopenmp
-#CCFLAGS=-g -O3 -march=native -Wall -I$(COMMONDIR) -DNDEBUG -fopenmp
-CCFLAGS=-g -O3 -march=native -I$(COMMONDIR) -DNDEBUG -fopenmp  -DMPI_DATATYPES -DMPI_NEIGHBORHOOD -DDISABLE_PNG
-# CCFLAGS=-g -O3 -Wall -I$(COMMONDIR) -DNDEBUG -fno-tree-vectorize
-LDFLAGS=
-# LIBS=
-endif
-
-
-ifeq ($(COMP),intel)
-CXX=mpicxx
-CC=icc
-CCFLAGS=-g -O3 -xHost -I$(COMMONDIR) -DNDEBUG -qopenmp -DNO_MPI
-LDFLAGS=
+CCFLAGS=-fopenmp -O3 -Wall $(DFLAGS)
+LDFLAGS=-fopenmp
 LIBS=
 endif
 
-EXE=heat_hybrid
-OBJS=main.o heat.o core.o setup.o io.o utilities.o
-OBJS_PNG=$(COMMONDIR)/pngwriter.o
+BUILDDIR := build
 
+# Override before including so heat-shared artifacts land in our build tree
+HEAT_COMMON_LIB := $(BUILDDIR)/heat_common.a
+
+HEAT_SHARED_DIR := ../../../../heat-shared
+include $(HEAT_SHARED_DIR)/Makefile-common
+CCFLAGS += $(HEAT_SHARED_CFLAGS)
+
+EXE=heat3d
+EXE_FULL=$(BUILDDIR)/$(EXE)
+OBJS=$(addprefix $(BUILDDIR)/,main.o heat.o core.o setup.o io.o utilities.o)
+DEPS=$(OBJS:.o=.d)
 
 all: $(EXE)
 
+$(BUILDDIR):
+	@mkdir -p $@
 
-utilities.o: utilities.cpp heat.hpp
-heat.o: heat.cpp heat.hpp parallel.hpp matrix.hpp
-core.o: core.cpp parallel.hpp heat.hpp
-setup.o: setup.cpp parallel.hpp heat.hpp
-io.o: io.cpp heat.hpp parallel.hpp matrix.hpp
-main.o: main.cpp parallel.hpp heat.hpp
+# Just copies the produced executable to Makefile directory
+$(EXE): $(EXE_FULL)
+	cp $< $@
 
-$(OBJS_PNG): C_COMPILER := $(CC)
-$(OBJS): C_COMPILER := $(CXX)
+$(EXE_FULL): $(OBJS) $(HEAT_COMMON_LIB)
+	$(CXX) $(LDFLAGS) $(OBJS) $(HEAT_COMMON_LIB) $(LIBS) -o $@
 
-$(EXE): $(OBJS) $(OBJS_PNG)
-	$(CXX) $(CCFLAGS) $(OBJS) $(OBJS_PNG) -o $@ $(LDFLAGS) $(LIBS)
+$(BUILDDIR)/%.o: %.cpp | $(BUILDDIR)
+	$(CXX) $(CCFLAGS) -MMD -MP -c $< -o $@
 
-%.o: %.cpp
-	$(CXX) $(CCFLAGS) -c $< -o $@
+$(BUILDDIR)/%.o: %.c | $(BUILDDIR)
+	$(CC) $(CCFLAGS) -MMD -MP -c $< -o $@
 
-%.o: %.c
-	$(CC) $(CCFLAGS) -c $< -o $@
+-include $(DEPS)
 
 .PHONY: clean
-clean:
-	-/bin/rm -f $(EXE) a.out *.o *.png *~
+clean: heat-common-clean
+	-/bin/rm -rf build $(EXE)
