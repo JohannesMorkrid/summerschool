@@ -145,6 +145,18 @@ loaded by `partition/G`).
 It's important to ensure that GPU code is generated as the compilation
 command is the same in CPU and GPU cases.
 
+To obtain compiler diagnostics:
+
+```bash
+cc -fopenmp -O3 -Wall -fsave-loopmark test.c -o test.x
+CC -fopenmp -O3 -Wall -fsave-loopmark test.cpp -o test.x
+ftn -fopenmp -O3 -hmsgs -hlist=m test.F90 -o test.x
+```
+
+See [HPE Cray Clang C and C++ Quick Reference (17.0.1)](https://support.hpe.com/hpesc/public/docDisplay?docId=dp00004439en_us)
+and [ftn man pages](https://cpe.ext.hpe.com/docs/24.03/cce/man1/crayftn.1.html)
+for further information.
+
 
 ## Running
 
