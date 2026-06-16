@@ -107,10 +107,10 @@ SPDX-Snippet CopyrightText: 2020 EPCC, The University of Edinburgh <https://www.
 Correct: B
 
 This is the closest we have to a trick question, written to make it
-look like the correct answer is C!
+look like the correct answer would be C!
 
 Although the reduction operation is called from different lines by
-different processes, they are an participating in **the same**
+different processes, they are all participating in **the same**
 reduction as the communicator is MPI_COMM_WORLD.
 As a result, every process computes the sum of all the ranks which is
 28, the only difference is that even ranks store the result in
