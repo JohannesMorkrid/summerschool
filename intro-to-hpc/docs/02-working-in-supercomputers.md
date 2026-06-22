@@ -16,7 +16,7 @@ lang:   en
 - File system in LUMI and CSC supercomputers
 - Module system
 - Building applications
-- Running applications via batch job system
+- Running applications on a supercomputer
 
 # Connecting to LUMI and CSC supercomputers {.section}
 
@@ -26,19 +26,18 @@ lang:   en
 
 # Connecting to LUMI and CSC supercomputers
 
-- SSH with public key authentication is used to connect to the login node
+- SSH is used to connect to the login node
   - <https://github.com/csc-training/summerschool/wiki/Setting-up-CSC-account-and-SSH>
 - Web interfaces also exist
   - <https://www.lumi.csc.fi>
   - <https://www.mahti.csc.fi>
-  - <https://www.puhti.csc.fi>
 
-# File system in LUMI and CSC supercomputers {.section}
+# Filesystem in LUMI and CSC supercomputers {.section}
 
 # Directory structure
 
 - LUMI and CSC supercomputers have separate file systems
-  - Files need to be explicitly copied between LUMI, Mahti, and Puhti
+  - Files need to be explicitly copied between LUMI and Mahti
 - Directory structure is common in all systems
 
 |            |Owner   |Environment variable|Path                 |
@@ -47,7 +46,7 @@ lang:   en
 |**projappl**|Project |Not available       |`/projappl/<project>`|
 |**scratch** |Project |Not available       |`/scratch/<project>` |
 
-- See `lumi-workspaces` on LUMI or `csc-workspaces` on Mahti and Puhti
+- See `lumi-workspaces` on LUMI or `csc-workspaces` on Mahti
 
 # Using project-level storage space
 
@@ -56,20 +55,18 @@ lang:   en
   mkdir -p /scratch/<project>/$USER
   cd /scratch/<project>/$USER
   ```
-- Use this personal work space during summer school to avoid file conflicts with other project members
+- Use this personal work space to avoid file conflicts with other project members
 
 # Filesystems on CSC supercomputers
 
-The filesystem used on CSC systems (Puhti, Mahti, Lumi) is called **Lustre**.
-
-- Parallel: data is distributed across many storage drives
-- Files can be accessed from all tasks (user permissions still apply)
-- Lustre is very common in HPC in general, not just at CSC
-
-Many systems also provide node-local disk area for temporary storage
-
-- `/tmp`, `$TMPDIR`, `$LOCAL_SCRATCH` *etc.* depending on the system
-- Sometimes the temporary storage may reside directly in memory (`/tmp` on Lumi compute nodes). Consult system docs for details
+- The filesystem used on CSC systems is called **Lustre**
+  - Parallel: data is distributed across many storage drives
+  - Shared: Files can be accessed from all nodes
+  - Lustre is very common in HPC in general, not just at CSC
+- Many systems also provide node-local disk area for temporary storage
+  - `/tmp`, `$TMPDIR`, `$LOCAL_SCRATCH` *etc.* depending on the system
+  - Sometimes the temporary storage may reside directly in memory (`/tmp` on LUMI compute nodes)
+  - See system docs for details
 
 # Lustre architecture
 
@@ -77,34 +74,43 @@ Many systems also provide node-local disk area for temporary storage
 
 - Files are chunked up and spread across multiple **storage servers** as **objects**
 - Dedicated **metadata server(s)** (MDS): file names, owners, permissions, ...
-- **Client**: HPC nodes that access the data
+- **Client**: HPC node that access the data
 
 </div>
 
 <div class="column">
 
 ![](img/lustre-architecture.svg)
-Clients interact with MDS once to gain OST access, then I/O to objects directly.
+Clients interact with MDS once to gain OST access, then I/O to objects directly
 
 - Allows for **very high, parallel I/O bandwidth!**
 
 </div>
 
-# Being nice to Lustre as an HPC user
+# Lustre metadata servers
 
-Every file lookup, file creation/deletion, permission change *etc.* is processed by the metadata server.
-
+- Every file lookup, file creation/deletion, permission change *etc.* is processed by the metadata servers
 - Metadata servers are shared by everyone using the supercomputer!
 - Commands like `ls` unresponsive? Servers may be under heavy load
 
 # Being nice to Lustre (and other users)
 
 - Avoid accessing a large number of small files
-  - Practical example: Python environments are typically containerized in supercomputers to avoid a significant performance hit due to accessing thousands of small files when loading the enviroment
+  - Practical example: Python environments are typically containerized to avoid a significant performance hit due to accessing thousands of small files when loading the enviroment
 - Avoid `ls -l` and use plain `ls` instead if you don't need the extra metadata
   - Less stress on the metadata servers
 - Use Lustre tools (e.g., `lfs find`) instead of regular file system tools (e.g. `find`)
   - Less stress on the metadata servers
+
+# Editing files
+
+- Edit directly on the supercomputer
+  - Vim, emacs, nano, ...
+- Edit locally with any editor and sync to the supercomputer
+  - See the `rsync` script
+- VSCode, Jupyter, etc apps in the web interface
+  - <https://www.lumi.csc.fi>
+  - <https://www.mahti.csc.fi>
 
 
 # Module system {.section}
@@ -171,7 +177,7 @@ cc main.c -o main
 ```
 
 - In practice programs are separated into several files
-  <br>$\Rightarrow$ complicated dependency structures
+  <br>&rarr; tree-like dependency structures
 - Building large programs takes time
   - Could we just rebuild the parts that changed?
 - Having different options when building
@@ -187,38 +193,36 @@ cc main.c -o main
 
 ![](img/depend.svg){.center width=40%}
 
-# Make rules
 
-- Make **rules** define how some part of your program is built
-  - **Target**: the output file (or aim) of your rule
-  - **Dependency**: which other targets your target depends on
-  - **Recipe**: how you produce your target
-- Rules are defined in a file which is by default called `Makefile`
-
-
-# Example Makefile
+# Makefiles
 
 <div class=column>
-- Dependencies can be files or other targets
-- Recipes consist of one or more shell commands
-    - Recipe lines start with a **tabulator**
+- Make rules are defined in a file which is by default called `Makefile`
+- Syntax of a rule:<br>
+  ```makefile
+  target: dependencies
+      recipe  # Indent with a tabulator!
+  ```
 - If the dependencies are newer than the target, make runs the recipe
 - Run first rule: `make`
 - Run specific rule: `make <target>`
 </div>
 
 <div class=column>
+`Makefile`:
+
 ```makefile
-main: main.c functions.o
-    gcc -c main.c
-    gcc -o main main.o functions.o
+prog.x: prog.o util.o
+    gcc prog.o util.o -o prog.x
 
-functions.o: functions.c
-    gcc -c functions.c
+prog.o: prog.c
+    gcc -O3 -c prog.c -o prog.o
 
-.PHONY: clean
+util.o: util.c
+    gcc -O3 -c util.c -o util.o
+
 clean:
-    rm -f main.o functions.o main
+    rm -f util.o prog.o prog.x
 ```
 </div>
 
@@ -232,14 +236,21 @@ clean:
 </div>
 
 <div class=column>
-```makefile
-CC=cc
-CCFLAGS=-O3
+`Makefile`:
 
-# Files of the form filename.o depend on
-# filename.c
+```makefile
+CC=gcc
+CCFLAGS=-O3
+LDFLAGS=
+
+prog.x: prog.o util.o
+    $(CC) $(LDFLAGS) $^ -o $@
+
 %.o: %.c
-        $(CC) $(CCFLAGS) -c $< -o $@
+    $(CC) $(CCFLAGS) -c $< -o $@
+
+clean:
+    rm -f *.o *.x
 ```
 </div>
 
@@ -255,113 +266,96 @@ CCFLAGS=-O3
 - **GNU Autotools** and **cmake** are the most common build generators in HPC
 
 
-# Running applications via batch job system {.section}
+# Running applications on a supercomputer {.section}
 
-# Batch queue system
+# Batch job system
 
-- On a cluster, instead of running a program instantly, you submit your
-  program/simulation (aka job) to a queue and the system will then execute it
-  once the resources are available
-    - The queue enables effective and fair resource usage
-    - CSC uses Slurm as the queue system
+- On a cluster, instead of running a program instantly, you submit your calculation job to
+  a queue and the system will then execute it once the resources are available
+  - The queue enables effective and fair resource usage
+  - CSC uses Slurm as the queue system
 
-- When running a job on a supercomputer you need to:
-    - Describe how you want to run the job and what resources you need
-    - Add a command that launches your program
-    - Submit your job to a queue
+# Available resources: Slurm partitions
 
+- Compute nodes are grouped in different *partitions* for different use cases
+  - Small CPU jobs, large CPU jobs, small GPU jobs, large GPU jobs, debugging, ...
+- List all partitions:
+  ```bash
+  sinfo
+  ```
+- Useful practical formatting:
+  ```bash
+  sinfo -e -o "%16P %4a %8s %.11l %11A %6z %.9m %30G %40N"
+  ```
+- See also system documentation:
+  - <https://docs.lumi-supercomputer.eu/runjobs/scheduled-jobs/partitions/>
+  - <https://docs.csc.fi/computing/running/batch-job-partitions/>
 
-# Example Slurm batch job script
+# Slurm batch jobs
 
-```bash
-#!/bin/bash
-#SBATCH --job-name=example
-#SBATCH --account=<project_id>
-#SBATCH --partition=small
-#SBATCH --time=00:10:00
-#SBATCH --nodes=2
-#SBATCH --ntasks-per-node=128
+- A job defines the following:
+  - The resource allocation requests
+  - The script to run the calculation
+    - Note! A special `srun` launcher is usually needed to launch the calculation
+- Structure of a batch job script `job.sh`:
+  ```bash
+  #!/bin/bash
+  #SBATCH <resource allocation requests>
 
-# srun launches "nodes * ntasks-per-node" MPI tasks of myprog
-srun ./myprog
-```
-
-- More examples:
-  - <https://docs.lumi-supercomputer.eu/runjobs/scheduled-jobs/batch-job/>
-  - <https://docs.csc.fi/computing/running/example-job-scripts-mahti/>
-  - <https://docs.csc.fi/computing/running/example-job-scripts-puhti/>
-
+  <script to run the calculation>
+  ```
+- Full example scripts in the summer school repository:
+  - [README_LUMI.md](https://github.com/csc-training/summerschool/blob/main/README_LUMI.md)
+  - [README_Mahti.md](https://github.com/csc-training/summerschool/blob/main/README_Mahti.md)
 
 # Submitting batch jobs
 
-- Submit your batch job script to the queue using `sbatch`:
+- Submit the batch job to the queue:
   ```bash
   sbatch job.sh
   ```
-- You can override parameters in the job script from commandline:
+- Useful hint: You can override the parameters in the job script from the command line:
   ```bash
   sbatch --nodes=1 --ntasks-per-node=4 --partition=debug job.sh
   ```
 
 # Managing batch jobs
 
-- You can follow the status of your jobs with `squeue`:
+- Follow the status of your jobs:
   ```bash
   squeue --me
   ```
-- If something goes wrong, you can cancel your job with `scancel`:
+- Cancel jobs using the numeric ID of the job (`<jobid>`):
   ```bash
-  scancel jobid
+  scancel <jobid>
   ```
-  (here the jobid is the numeric ID of the job)
-- Show job resource usage (for completed jobs) with `sacct`:
+- Show job resource usage (for completed jobs):
   ```bash
-  sacct jobid
+  sacct <jobid>
+  ```
+- Useful for debugging: Launch an interactive shell on a running allocation:
+  ```bash
+  srun --overlap --jobid=<jobid> --pty bash
   ```
 
-# Running interactive jobs
-
-- Alternatively to `sbatch`, you can submit a job to the queue using `srun`
-  ```bash
-  srun --account=... --partition=small --nodes=2 --ntasks-per-nodes=128 --time=00:10:00 ./myprog
-  ```
-  In this case the output will be shown on the terminal  (job will fail if the connection is lost).
-
-- Yet another way is to create an allocation with `salloc`:
-  ```bash
-  salloc --account=... --partition=small --nodes=2 --ntasks-per-nodes=128 --time=00:30:00
-  ```
-  Once the allocation is made, the `srun` command will execute in that allocation:
-  ```bash
-  srun --ntasks=32 --cpus-per-task=8 ./myprog
-  ```
 
 # Useful environment variables
 
-Following variables are available inside Slurm scripts:
+- Following variables are available inside Slurm scripts:
+  - `SLURM_JOBID`: job's id
+  - `SLURM_JOB_NAME`: job's name (given in `job-name`)
+  - `SLURM_JOB_NODELIST`: list of nodes allocated for the job
+- Following variables are available inside program launched by `srun`:
+  - `SLURM_NTASKS`: the number of tasks
+  - `SLURM_PROCID`: the global id of the calling process
+  - `SLURM_LOCALID`: the node-local id of the calling process
+- See `man sbatch` for a complete list
 
-- `SLURM_JOBID`: jobid
-- `SLURM_JOB_NAME` : name given in `job_name`
-- `SLURM_JOB_NODELIST` : list of nodes the job will run
-
-Following variables are available inside program launched by `srun`:
-
-- `SLURM_PROCID` : global id of process
-- `SLURM_LOCALID` : node local id of process
-
-# Useful environment variables
-
-Following variables override the corresponding variables in the batch script and command line:
-
-- `SBATCH_ACCOUNT` : `--account`
-- `SBATCH_PARTITION` : `--partition`
-
-See `man sbatch` for full list.
 
 # Summary {.section}
 
 # Summary
 
 - Login nodes are entry points to a supercomputer
-- Calculations are submitted as jobs to the queueing system
 - Modules and build tools help managing environment and software
+- Calculations are submitted as jobs to the queueing system
