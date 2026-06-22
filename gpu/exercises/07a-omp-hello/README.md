@@ -15,7 +15,7 @@ The [solution directory](solution/) contains discussion on the tasks below.
 
 ## Tasks
 
-1. Use `module` command to preprare the environment for compiling GPU code,
+1. Use `module` command to prepare the environment for compiling GPU code,
    following the general instructions for [LUMI](../../../README_LUMI.md).
 
 2. Compile the C++ version:
@@ -84,7 +84,7 @@ The [solution directory](solution/) contains discussion on the tasks below.
 
 ## Bonus tasks: NVIDIA HPC compiler on Mahti
 
-1. Use `module` command to preprare the NVIDIA HPC environment for compiling OpenMP offload code,
+1. Use `module` command to prepare the NVIDIA HPC environment for compiling OpenMP offload code,
    following the general instructions for [Mahti](../../../README_Mahti.md).
 
 2. Compile the code (C or Fortran):
